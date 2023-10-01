@@ -51,11 +51,6 @@ class AppState extends ChangeNotifier {
     return darkTheme! ? ThemeMode.dark : ThemeMode.light;
   }
 
-  setTarget(String target) {
-    targetCharacter = target;
-    notifyListeners();
-  }
-
   _refreshTarget(){
     if (goalPos==currentPos) {
       state=GameState.won;
@@ -86,7 +81,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
   bool isRightAnswer(BrailleAsBoolList input){
-    return (input == charToBrailleBoolList(targetCharacter,returnSpaceIfNull: true) && (state != GameState.won));
+    return (input == (charToBrailleBoolList(targetCharacter) ?? BrailleAsBoolList()) && (state != GameState.won));
   }
   bool submitInput(BrailleAsBoolList input){
     const bool skipSpaces=true;
@@ -125,7 +120,11 @@ class AppState extends ChangeNotifier {
 
 void submitButtonPress(BuildContext context) {
   if (Provider.of<AppState>(context, listen: false).submitInput(Provider.of<InputState>(context,listen: false).keys )) {
-    showSnackBar(context, 'Congratulations!! You won.', 5);
+    if (Provider.of<AppState>(context, listen: false).score > 100 ) {
+      showSnackBar(context, 'Game finished. Better luck for next time.', 5);
+    } else {
+      showSnackBar(context, 'Congratulations!! You won.', 5);
+    }
   }
   Provider.of<InputState>(context,listen: false).changeToALetter(BrailleAsBoolList());
 }

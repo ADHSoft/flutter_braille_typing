@@ -26,7 +26,7 @@ class MyAppProviders extends StatelessWidget {
         ChangeNotifierProvider<InputState>(create: (context) => InputState()),
         ChangeNotifierProvider<AppState>(create: (context) => AppState()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     );
   }
 }
@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange,
         brightness: Brightness.light,
-        scaffoldBackgroundColor: Color(0xffdddddd)
+        scaffoldBackgroundColor: const Color(0xffdddddd)
       ),
       darkTheme: ThemeData.dark(),
       themeMode: Provider.of<AppState>(context).getTheme(),
@@ -62,11 +62,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
 
   Widget build(BuildContext context) {
-    String? targetLabel, targetLetter;
+    String? targetLetter;
 
     targetLetter = Provider.of<AppState>(context).targetCharacter;
     String inputLetter = brailleBoolToChar(Provider.of<InputState>(context).keys) ?? " ";
-    targetLabel = "Objective : \"${targetLetter.toUpperCase()}\"";
     String inputLabel="Input character ( ${inputLetter.toUpperCase()} ) :";
 
     String title=appTitle;
@@ -79,7 +78,12 @@ class _MyHomePageState extends State<MyHomePage> {
         title= "($pos/$goal) - score: $score";
         break;
       case GameState.won:
-        title="You won! Score: $score";
+        if (score > 100) {
+          title="Congratulations! Score: $score";
+        } else {
+          title="Game over! Score: $score";
+        }
+
         break;
       case GameState.initial:
       case GameState.pause:
@@ -94,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(title),
         actions: [
-          KeyboardFocus(),
+          const KeyboardFocus(),
           /*IconButton(
             onPressed: () {
 
@@ -136,20 +140,25 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Spacer(flex: 1),
+                const Spacer(flex: 1),
                 Flexible(flex: 10, child: InputBrailleCharacter(label: inputLabel)),
-                Spacer(flex: 1),
-                Flexible(flex: 4, child: TargetBrailleCharacter(label: targetLabel)),
-                Spacer(flex: 1),
+                const Spacer(flex: 1),
+                Flexible(flex: 4, child: TargetBrailleCharacter(label: targetLetter.toUpperCase())),
+                const Spacer(flex: 1),
               ]
             ),
           ),
           Container(
             alignment: Alignment.bottomCenter,
-            child: GestureDetector(child: Text(!demo ? "© ${DateTime.now().year} ADHSoft" : "© ${DateTime.now().year}", style: TextStyle(color: Theme.of(context).disabledColor)),
-              onTap: () {
-                ShowLicensePage(context);
+            child: MaterialButton(
+              child: Text(
+              !demo ? "${DateTime.now().year}, ADHSoft" : "© ${DateTime.now().year}",
+               style: TextStyle(color: Theme.of(context).disabledColor)
+              ),
+              onPressed: () {
+                showLicensePage(context);
               },
+
             ),
           ),
           Container( height: MediaQuery.of(context).size.height > 500 ? 15 : 0,)
@@ -160,9 +169,9 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class InputBrailleCharacter extends StatelessWidget {
-  InputBrailleCharacter({super.key, required this.label});
+  const InputBrailleCharacter({super.key, required this.label});
 
-  String label;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -180,7 +189,9 @@ class InputBrailleCharacter extends StatelessWidget {
     bool rightAnswer = Provider.of<AppState>(context).isRightAnswer(input);
     return Column(mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Flexible(child: Center(child:Text(label)),fit: FlexFit.tight,),
+        Flexible(
+          fit: FlexFit.tight,child: Center(child:Text(label, style: const TextStyle(fontSize: 25),)),
+        ),
         Flexible(
           flex: 5,
           child: GestureDetector(
@@ -197,15 +208,15 @@ class InputBrailleCharacter extends StatelessWidget {
           flex: 1,
           child: Center(child: ElevatedButton(
             style: ButtonStyle(
-              backgroundColor: rightAnswer ? MaterialStateProperty.all<Color>(Color(0xff00a010)) : null,
+              backgroundColor: rightAnswer ? MaterialStateProperty.all<Color>(const Color(0xff00a010)) : null,
             ),
             onPressed: () {
               submitButtonPress(context);
             },
             child: Padding(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Text( (rightAnswer ? "✅ Next" : "Clear") + (Provider.of<AppState>(context).showKeyboardLetters ? " [Spacebar]" : "") ,
-              style: rightAnswer ? TextStyle( fontWeight: FontWeight.bold ) : const TextStyle(),textAlign:TextAlign.center
+              style: rightAnswer ? const TextStyle( fontWeight: FontWeight.bold ) : const TextStyle(),textAlign:TextAlign.center
               )
             ),
           ))
@@ -235,13 +246,14 @@ class TargetBrailleCharacter extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Spacer(flex: 22,),
-        Text(label,),
-        Spacer(),
+        const Spacer(flex: 22,),
+        const Text("Objective :", style: TextStyle(fontSize: 15),textAlign: TextAlign.center,),
+        Text(label, style: const TextStyle(fontSize: 25),textAlign: TextAlign.center,),
+        const Spacer(),
         Expanded(flex: 12,
           child: BrailleCharacter(dots: dotData),
         ),
-        Spacer(),
+        const Spacer(),
         TextButton(
           child: Text(hide ? "Show answer" : "Hide answer",textAlign:TextAlign.center ),
           onPressed: () {
@@ -253,7 +265,7 @@ class TargetBrailleCharacter extends StatelessWidget {
   }
 }
 
-ShowLicensePage(BuildContext context) async {
+showLicensePage(BuildContext context) async {
   await showDialog(context: context, builder: (context) => LicensePage(
     applicationName: appTitle,
     applicationLegalese: "© ${DateTime.now().year} ADHSoft\nAuthor: Alejandro Herme\n"

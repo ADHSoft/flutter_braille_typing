@@ -61,7 +61,7 @@ class BrailleDot extends StatelessWidget {
   Widget build(BuildContext context) {
     return Flexible(
       flex: 10,
-      child: AspectRatio(
+      child: RepaintBoundary( child:AspectRatio(
         aspectRatio: 1,
         child: IgnorePointer(
           ignoring: (onDotPress == null),
@@ -76,9 +76,9 @@ class BrailleDot extends StatelessWidget {
             fillColor: dotData[id].state ? Theme.of(context).hintColor : null,
             child: Text(dotData[id].letter ?? " ", style: TextStyle(color: Theme.of(context).shadowColor, fontStyle: FontStyle.italic, fontSize: 15)),
             )
-        )
+        ),
 
-      )
+      ))
     );
   }
 }

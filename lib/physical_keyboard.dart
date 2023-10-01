@@ -12,21 +12,15 @@ class KeyboardDefs {
 }
 
 /// button that also acts as the focus node for keyboard input
-class KeyboardFocus extends StatefulWidget {
+class KeyboardFocus extends StatelessWidget {
   const KeyboardFocus({super.key});
 
-  @override
-  State<KeyboardFocus> createState() => _KeyboardFocusState();
-}
+  _handleKeyEvent(BuildContext context, RawKeyEvent event) {
 
-class _KeyboardFocusState extends State<KeyboardFocus> {
-
-  KeyEventResult _handleKeyEvent(RawKeyEvent event) {
-
-    if ( event is RawKeyDownEvent ) {
-    }
-    if ( event is RawKeyUpEvent ) {
-      return KeyEventResult.handled;
+    /*if ( event is RawKeyDownEvent ) {
+    }*/
+    if ( event is !RawKeyDownEvent ) {
+      return;
     }
     if ( KeyboardDefs.keys.contains(event.logicalKey) ) {
       Provider.of<InputState>(context,listen: false).changeDot(context,KeyboardDefs.keys.indexOf(event.logicalKey));
@@ -35,34 +29,27 @@ class _KeyboardFocusState extends State<KeyboardFocus> {
         submitButtonPress(context);
       }
     }
-    return KeyEventResult.handled;
   }
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme textTheme = Theme.of(context).textTheme;
     FocusNode focusNode = Provider.of<InputState>(context, listen: false).focusNode;
-    return Container(
+    return Stack(
       alignment: Alignment.center,
-      child: DefaultTextStyle(
-        style: textTheme.headlineMedium!,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            RawKeyboardListener(
-              focusNode: focusNode,
-              onKey: _handleKeyEvent,
-              child: Container(),
-            ),
-            IconButton(
-
-              onPressed: () {
-                keyboardButtonPressed(context);
-              }, icon: Icon(Icons.keyboard) ,tooltip: "Use keyboard / take kbd. focus"
-            ),
-          ],
+      children: [
+        RawKeyboardListener(
+          focusNode: focusNode,
+          onKey: (event) {
+            _handleKeyEvent(context, event);
+          },
+          child: Container(),
         ),
-      ),
+        IconButton(
+          onPressed: () {
+            keyboardButtonPressed(context);
+          }, icon: Icon(Icons.keyboard) ,tooltip: "Use physical keyboard"
+        ),
+      ],
     );
   }
 }
