@@ -1,12 +1,11 @@
-import 'braille.dart';
+import 'package:flutter_braille_typing/models/braille.dart';
 import 'package:test/test.dart';
-
 
 /// Tests:
 void main() {
   test('numberOfDots should be 6',
   () {
-    expect(numberOfDots, 6);
+    expect(Braille.numberOfDots, 6);
   });
   test('BrailleAsBoolList equality and hash check with mutability',
   () {
@@ -41,7 +40,7 @@ void main() {
     expect(a.hashCode == b.hashCode, false);
     expect(a == b, false);
   });
-  test('BrailleAsBoolList operator == won\'t crash if other obj. is not of the same type',
+  test('BrailleAsBoolList operator == won\'t crash if the other obj. is not of the same type',
   () {
     var a,b,c;
     a = BrailleAsBoolList();
@@ -52,7 +51,7 @@ void main() {
     expect(b == c, false);
     expect(c == b, false);
   });
-  test('MyTestClass operator == won\'t crash if other obj. is not of the same type',
+  test('MyTestClass operator == won\'t crash if the other obj. is not of the same type',
   () {
     var a,b,c;
     a = MyTestClass();
