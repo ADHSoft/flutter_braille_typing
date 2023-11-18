@@ -1,47 +1,30 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_braille_typing/braille.dart';
+import 'package:flutter_braille_typing/models/braille.dart';
 import 'package:provider/provider.dart';
 
-enum GameState {
+enum GameStates {
   running,
   won,
   pause,
   initial
 }
 
-class AppState extends ChangeNotifier {
-  late TextEditingController controller;
-  late String targetCharacter;
-  late GameState state;
-  late int goalPos, currentPos, score;
-  late bool showKeyboardLetters, verticalLayout, answerVisible, answerShown;
+class AppOptionsState extends ChangeNotifier {
   bool? darkTheme;
-
-  AppState() {
-    controller = TextEditingController(text: "Your objective is to write the text of this box, letter by letter, in braille, by turning on the right dots.");
-    reset();
-  }
+  late bool showKeyboardLetters, verticalLayout;
 
   reset() {
-    answerVisible=true;
-    resetGame();
     verticalLayout=false;
     showKeyboardLetters=false;
     notifyListeners();
   }
-  resetGame() {
-    answerShown=answerVisible;
-    score=0;
-    state  = GameState.initial;
-    targetCharacter = " ";
-    goalPos=controller.value.text.length;
-    currentPos = 0;
-    _refreshTarget();
+
+  AppOptionsState() {
+    reset();
   }
 
   changeTheme() {
-    darkTheme ??= true;
+    darkTheme ??= false;
     darkTheme = ! darkTheme!;
     notifyListeners();
   }
@@ -51,9 +34,47 @@ class AppState extends ChangeNotifier {
     return darkTheme! ? ThemeMode.dark : ThemeMode.light;
   }
 
+  keyboardButtonPressed() {
+    showKeyboardLetters=!showKeyboardLetters;
+
+    notifyListeners();
+  }
+}
+
+class GameState extends ChangeNotifier {
+  //toDo: clean up, improve
+
+  late TextEditingController controller;
+  late String targetCharacter;
+  late GameStates state;
+  late int goalPos, currentPos, score;
+  late bool answerVisible, answerShown;
+
+  static const String defaultGoalText = "Write the text of this field, letter by letter, by turning on the right dots.";
+
+  GameState() {
+    controller = TextEditingController(text: defaultGoalText);
+    reset();
+  }
+
+  reset() {
+    answerVisible=true;
+    resetGame();
+    notifyListeners();
+  }
+  resetGame() {
+    answerShown=answerVisible;
+    score=0;
+    state  = GameStates.initial;
+    targetCharacter = " ";
+    goalPos=controller.value.text.length;
+    currentPos = 0;
+    _refreshTarget();
+  }
+
   _refreshTarget(){
     if (goalPos==currentPos) {
-      state=GameState.won;
+      state=GameStates.won;
       currentPos = 0;
     } else if (goalPos < currentPos) {
       currentPos = 0;
@@ -66,26 +87,24 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  keyboardButtonPressed(){
-    showKeyboardLetters=!showKeyboardLetters;
-
-    notifyListeners();
-  }
-  resume(){
-    state=GameState.running;
+  resume() { //(on input change)
+    if (state==GameStates.won){
+      resetGame();
+    }
+    state=GameStates.running;
     _refreshTarget();
     notifyListeners();
   }
   pause(){
-    state=GameState.pause;
+    state=GameStates.pause;
     notifyListeners();
   }
   bool isRightAnswer(BrailleAsBoolList input){
-    return (input == (charToBrailleBoolList(targetCharacter) ?? BrailleAsBoolList()) && (state != GameState.won));
+    return (input == (Braille.charToBrailleBoolList(targetCharacter) ?? BrailleAsBoolList()) && (state != GameStates.won));
   }
   bool submitInput(BrailleAsBoolList input){
     const bool skipSpaces=true;
-    if (state != GameState.running ) {
+    if (state != GameStates.running ) {
       return false;
     }
     _refreshTarget();
@@ -98,10 +117,10 @@ class AppState extends ChangeNotifier {
         answerShown=answerVisible;
       }
       _refreshTarget();
-    } while ( targetCharacter == " " && skipSpaces && state != GameState.won);
+    } while ( targetCharacter == " " && skipSpaces && state != GameStates.won);
 
     notifyListeners();
-    return (state == GameState.won);
+    return (state == GameStates.won);
   }
   changeScore(int score) {
     if (!answerShown) this.score+=score;
@@ -109,7 +128,7 @@ class AppState extends ChangeNotifier {
   }
   setAnswerVisible({bool? s}){
     s ??= !answerVisible;
-    if (!answerVisible && state==GameState.running) {
+    if (!answerVisible && state==GameStates.running) {
       changeScore(-100);
       answerShown=true;
     }
@@ -118,9 +137,10 @@ class AppState extends ChangeNotifier {
   }
 }
 
+//toDo move to a class
 void submitButtonPress(BuildContext context) {
-  if (Provider.of<AppState>(context, listen: false).submitInput(Provider.of<InputState>(context,listen: false).keys )) {
-    if (Provider.of<AppState>(context, listen: false).score > 100 ) {
+  if (Provider.of<GameState>(context, listen: false).submitInput(Provider.of<InputState>(context,listen: false).keys )) {
+    if (Provider.of<GameState>(context, listen: false).score < 100 ) {
       showSnackBar(context, 'Game finished. Better luck for next time.', 5);
     } else {
       showSnackBar(context, 'Congratulations!! You won.', 5);
@@ -129,6 +149,7 @@ void submitButtonPress(BuildContext context) {
   Provider.of<InputState>(context,listen: false).changeToALetter(BrailleAsBoolList());
 }
 
+//toDo move to views
 void showSnackBar(BuildContext context, String message, int seconds) {
   final ScaffoldMessengerState scaffold = ScaffoldMessenger.of(context);
   scaffold.showSnackBar(
@@ -159,7 +180,7 @@ class InputState extends ChangeNotifier {
   }
   changeDot(BuildContext context, int index, {bool? state}) { //state == null =>  means to toggle state
     keys.value[index] = state ?? !(keys.value[index]);
-    Provider.of<AppState>(context,listen: false).changeScore(-10);
+    Provider.of<GameState>(context,listen: false).changeScore(-10);
     notifyListeners();
   }
   changeToALetter(BrailleAsBoolList value) {

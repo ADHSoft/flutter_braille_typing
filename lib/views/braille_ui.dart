@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'models.dart';
+import 'package:flutter_braille_typing/models/models.dart';
 
 /// This widget will ocupy the whole area by the given constraints.
 class BrailleCharacter extends StatelessWidget {
@@ -23,9 +22,9 @@ class BrailleCharacter extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               BrailleDot( id: 0, dotData: dots, onDotPress: onDotPress),
-              Spacer(),
+              const Spacer(),
               BrailleDot( id: 1, dotData: dots, onDotPress: onDotPress),
-              Spacer(),
+              const Spacer(),
               BrailleDot( id: 2, dotData: dots, onDotPress: onDotPress),
             ],
           ),
@@ -38,9 +37,9 @@ class BrailleCharacter extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               BrailleDot( id: 3, dotData: dots, onDotPress: onDotPress),
-              Spacer(),
+              const Spacer(),
               BrailleDot( id: 4, dotData: dots, onDotPress: onDotPress),
-              Spacer(),
+              const Spacer(),
               BrailleDot( id: 5, dotData: dots, onDotPress: onDotPress),
             ],
           ),
@@ -69,7 +68,7 @@ class BrailleDot extends StatelessWidget {
             onPressed: () {
               if (onDotPress != null) {
                onDotPress!(id);
-               Provider.of<AppState>(context, listen: false).resume();
+               Provider.of<GameState>(context, listen: false).resume();
               }
             },
             shape: const CircleBorder(side: BorderSide(width: 2, color: Colors.black)),
